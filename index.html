@@ -693,7 +693,7 @@
         <h1 class="title">Will You Be Mine? 💕</h1>
         
         <div class="character-container">
-            <img id="characterGif" class="gif-character" src="giphy.gif" alt="Asking character">
+            <img id="characterGif" class="gif-character" src="start.webp" alt="Asking character">
         </div>
         
         <div class="buttons-container" id="buttonsContainer">
@@ -714,10 +714,10 @@
         const mainContainer = document.getElementById('mainContainer');
 
         // GIF URLs (replace with your own)
-        const startingGif = "giphy.gif"; // Neutral/Happy
-        const firstNoGif = "giphy.webp"; // Sad
-        const secondNoGif = "giphy.webp"; // Very Sad
-        const lastNoGif = "giveup.gif"; // Crying/Heartbreak
+        const startingGif = "start.webp"; // Neutral/Happy
+        const firstNoGif = "first.webp"; // Sad
+        const secondNoGif = "second.webp"; // Very Sad
+        const lastNoGif = "last.webp"; // Crying/Heartbreak
 
         // Start the welcome animation sequence
         window.addEventListener('load', () => {
@@ -737,7 +737,7 @@
         });
 
         function handleYes() {
-            characterGif.src = "sending-love-cute-moment.gif"; // Happy GIF
+            characterGif.src = "accept.webp"; // Happy GIF
             message.innerHTML = '🎉 Yay!';
             message.style.color = '#fff';
             message.style.fontSize = '1.5em';
