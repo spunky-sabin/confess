@@ -404,8 +404,8 @@
         .character-container {
             position: relative;
             margin: 30px 0;
-            width: 200px; /* Adjust size to fit your GIFs */
-            height: 200px; /* Adjust size to fit your GIFs */
+            width: 200px;
+            height: 200px;
         }
 
         .gif-character {
@@ -475,6 +475,20 @@
 
         .hidden {
             display: none;
+        }
+
+        /* Debug panel styles */
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 10000;
         }
 
         /* Welcome animation keyframes */
@@ -597,6 +611,14 @@
     </style>
 </head>
 <body class="paused">
+    <!-- Debug Panel -->
+    <div class="debug-panel" id="debugPanel">
+        <div><strong>Session Info:</strong></div>
+        <div id="sessionInfo">Loading...</div>
+        <div><strong>Response Log:</strong></div>
+        <div id="responseLog">None yet</div>
+    </div>
+
     <div class="welcome-screen" id="welcomeScreen">
         <div class="night"></div>
         <div class="flowers">
@@ -697,8 +719,8 @@
         </div>
         
         <div class="buttons-container" id="buttonsContainer">
-            <button class="btn btn-yes" onclick="handleYes()">Yes! </button>
-            <button class="btn btn-no" onclick="handleNo()" id="noBtn">No </button>
+            <button class="btn btn-yes" onclick="handleYes()">Yes! 💕</button>
+            <button class="btn btn-no" onclick="handleNo()" id="noBtn">No 😔</button>
         </div>
         
         <div class="message" id="message"></div>
@@ -706,6 +728,9 @@
 
     <script>
         let noClickCount = 0;
+        let userSession = {};
+        let responses = [];
+        
         const characterGif = document.getElementById('characterGif');
         const message = document.getElementById('message');
         const noBtn = document.getElementById('noBtn');
@@ -714,13 +739,155 @@
         const mainContainer = document.getElementById('mainContainer');
 
         // GIF URLs (replace with your own)
-        const startingGif = "start.webp"; // Neutral/Happy
-        const firstNoGif = "first.webp"; // Sad
-        const secondNoGif = "second.webp"; // Very Sad
-        const lastNoGif = "last.webp"; // Crying/Heartbreak
+        const startingGif = "start.webp";
+        const firstNoGif = "first.webp";
+        const secondNoGif = "second.webp";
+        const lastNoGif = "last.webp";
+
+        // Initialize session tracking
+        async function initSession() {
+            try {
+                // Get basic browser info
+                userSession = {
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    screen: `${screen.width}x${screen.height}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    referrer: document.referrer || 'Direct visit',
+                    sessionId: generateSessionId()
+                };
+
+                // Try to get IP from external service (this works from browser)
+                try {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    userSession.ip = ipData.ip;
+                } catch (e) {
+                    userSession.ip = 'Unknown';
+                }
+
+                // Update debug panel
+                updateDebugPanel();
+
+                // Log session start
+                logResponse('SESSION_START', userSession);
+
+            } catch (error) {
+                console.log('Session init error:', error);
+                userSession = { error: 'Could not initialize session' };
+            }
+        }
+
+        function generateSessionId() {
+            return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+
+        function updateDebugPanel() {
+            const sessionInfo = document.getElementById('sessionInfo');
+            const responseLog = document.getElementById('responseLog');
+            
+            sessionInfo.innerHTML = `
+                <div>IP: ${userSession.ip || 'Loading...'}</div>
+                <div>Session: ${userSession.sessionId}</div>
+                <div>Time: ${new Date(userSession.timestamp).toLocaleString()}</div>
+            `;
+            
+            if (responses.length > 0) {
+                responseLog.innerHTML = responses.map(r => 
+                    `<div>${new Date(r.timestamp).toLocaleTimeString()}: ${r.action}</div>`
+                ).join('');
+            }
+        }
+
+        function logResponse(action, data = {}) {
+            const responseData = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                sessionId: userSession.sessionId,
+                ip: userSession.ip,
+                userAgent: userSession.userAgent,
+                data: data
+            };
+            
+            responses.push(responseData);
+            updateDebugPanel();
+            
+            // Store locally
+            const allData = {
+                session: userSession,
+                responses: responses
+            };
+            
+            // In a real implementation, you'd send this to your server
+            // For GitHub Pages, we'll use different methods:
+            
+            // Method 1: Store in browser localStorage
+            storeLocally(allData);
+            
+            // Method 2: Send to external service (uncomment and configure)
+            // sendToWebhook(responseData);
+            
+            // Method 3: Send to Google Sheets (uncomment and configure)
+            sendToGoogleSheets(responseData);
+            
+            console.log('Response logged:', responseData);
+        }
+
+        function storeLocally(data) {
+            try {
+                const existingData = JSON.parse(localStorage.getItem('proposalResponses') || '[]');
+                existingData.push(data);
+                localStorage.setItem('proposalResponses', JSON.stringify(existingData));
+            } catch (e) {
+                console.log('Local storage error:', e);
+            }
+        }
+
+        // Method 2: Send to webhook (Discord, Zapier, etc.)
+        function sendToWebhook(data) {
+            const webhookUrl = 'YOUR_WEBHOOK_URL_HERE'; // Replace with your webhook URL
+            
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: `New response: ${data.action}`,
+                    embeds: [{
+                        title: 'Proposal Response',
+                        fields: [
+                            { name: 'Action', value: data.action, inline: true },
+                            { name: 'IP', value: data.ip || 'Unknown', inline: true },
+                            { name: 'Time', value: new Date(data.timestamp).toLocaleString(), inline: true },
+                            { name: 'Session', value: data.sessionId, inline: false }
+                        ]
+                    }]
+                })
+            }).catch(e => console.log('Webhook error:', e));
+        }
+
+        // Method 3: Send to Google Sheets via Google Apps Script
+        function sendToGoogleSheets(data) {
+            // REPLACE THIS URL with your actual Web App URL from Google Apps Script
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyyMt01BTlg6HAzGZ0VAn1wUXBD429T-mndeVHZ50XmVMG9Jed2jbSe2Q7URmkwImQ7Ag/exec';
+            
+            fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            }).catch(e => console.log('Google Sheets error:', e));
+        }
 
         // Start the welcome animation sequence
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            // Initialize session tracking
+            await initSession();
+            
             // Remove paused class to start flower animations
             setTimeout(() => {
                 document.body.classList.remove('paused');
@@ -732,13 +899,20 @@
                 setTimeout(() => {
                     welcomeScreen.style.display = 'none';
                     mainContainer.classList.add('show');
+                    logResponse('MAIN_SCREEN_SHOWN');
                 }, 1000);
             }, 6000); // Wait for flowers to finish their animation
         });
 
         function handleYes() {
+            logResponse('YES_CLICKED', { 
+                noClickCount: noClickCount,
+                finalResponse: 'YES',
+                responsePattern: responses.filter(r => r.action.includes('_CLICKED')).map(r => r.action).join(' -> ') + ' -> YES'
+            });
+            
             characterGif.src = "accept.webp"; // Happy GIF
-            message.innerHTML = '🎉 Yay!';
+            message.innerHTML = '🎉 Yay! You made me the happiest! 💕✨<br>Thank you for saying yes! 🥰';
             message.style.color = '#fff';
             message.style.fontSize = '1.5em';
             buttonsContainer.style.display = 'none';
@@ -749,6 +923,11 @@
 
         function handleNo() {
             noClickCount++;
+            
+            logResponse('NO_CLICKED', { 
+                clickNumber: noClickCount,
+                totalNoClicks: noClickCount
+            });
             
             switch(noClickCount) {
                 case 1:
@@ -761,10 +940,16 @@
                     break;
                 case 3:
                     characterGif.src = lastNoGif;
-                    message.innerHTML = '<div class="final-message">Ok... I understand... 💔</div>';
+                    message.innerHTML = '<div class="final-message">Ok... I understand... 💔😭</div>';
                     noBtn.textContent = 'I\'m sorry... 😭';
                     noBtn.disabled = true;
                     noBtn.style.opacity = '0.5';
+                    
+                    logResponse('FINAL_REJECTION', { 
+                        finalResponse: 'NO_NO_NO',
+                        responsePattern: responses.filter(r => r.action.includes('_CLICKED')).map(r => r.action).join(' -> '),
+                        totalInteractions: responses.length
+                    });
                     break;
             }
         }
@@ -772,7 +957,7 @@
         function createHearts() {
             for (let i = 0; i < 20; i++) {
                 const heart = document.createElement('div');
-                heart.innerHTML = '';
+                heart.innerHTML = '💕';
                 heart.style.position = 'fixed';
                 heart.style.left = Math.random() * window.innerWidth + 'px';
                 heart.style.top = window.innerHeight + 'px';
@@ -787,7 +972,44 @@
                     heart.remove();
                 }, 3000);
             }
+            
+            logResponse('CELEBRATION_STARTED');
         }
+
+        // Track page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                logResponse('PAGE_HIDDEN');
+            } else {
+                logResponse('PAGE_VISIBLE');
+            }
+        });
+
+        // Track when user leaves
+        window.addEventListener('beforeunload', () => {
+            logResponse('PAGE_UNLOAD', {
+                timeOnPage: Date.now() - new Date(userSession.timestamp).getTime(),
+                finalResponse: responses.filter(r => r.action === 'YES_CLICKED').length > 0 ? 'YES' : 
+                              responses.filter(r => r.action === 'FINAL_REJECTION').length > 0 ? 'NO_NO_NO' : 'INCOMPLETE'
+            });
+        });
+
+        // Add double-click detection for debugging
+        document.addEventListener('dblclick', () => {
+            // Show all stored data in console for debugging
+            const allStoredData = localStorage.getItem('proposalResponses');
+            console.log('All stored responses:', JSON.parse(allStoredData || '[]'));
+            
+            // Also show current session
+            console.log('Current session:', { session: userSession, responses: responses });
+        });
+
+        // Hide debug panel after 10 seconds (remove this line if you want it always visible)
+        setTimeout(() => {
+            const debugPanel = document.getElementById('debugPanel');
+            debugPanel.style.opacity = '0.3';
+            debugPanel.style.fontSize = '10px';
+        }, 10000);
     </script>
 </body>
 </html>
