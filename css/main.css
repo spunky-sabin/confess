@@ -1912,9 +1912,9 @@ body {
 }
 
 .scene-container.open .letter {
-  transform: translateY(-200px) scale(1.3);
-  height: 380px;
-  /* Expand letter to fit content */
+  transform: translateY(-250px) scale(1.5);
+  height: 400px;
+  /* Expand letter to fit content without clipping */
   z-index: 6;
   /* Bring letter to front so buttons work */
 }
