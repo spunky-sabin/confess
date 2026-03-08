@@ -81,6 +81,7 @@ onload = () => {
     proposalText.textContent = "I knew you would say yes! ❤️";
     proposalText.style.color = "#d10056";
     proposalButtons.style.display = "none";
+    btnNo.style.display = "none";
 
     // Increase size of the images slightly for celebration effect
     const proposalImgs = document.querySelectorAll(".proposal-img");
