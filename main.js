@@ -78,16 +78,19 @@ onload = () => {
   btnNo.addEventListener("click", moveNoButton);
 
   btnYes.addEventListener("click", () => {
+    // Detach and move text below the envelope
     proposalText.textContent = "I knew you would say yes! ❤️";
-    proposalText.style.color = "#d10056";
+    proposalText.className = "success-text";
+    sceneContainer.appendChild(proposalText);
+
     proposalButtons.style.display = "none";
     btnNo.style.display = "none";
 
-    // Increase size of the images slightly for celebration effect
-    const proposalImgs = document.querySelectorAll(".proposal-img");
-    proposalImgs.forEach(img => {
-      img.style.transform = img.classList.contains('img-left') ? "scale(1.1) rotate(-5deg)" : "scale(1.1) rotate(5deg)";
-      img.style.transition = "transform 0.5s ease";
-    });
+    // Enlarge the couple photo to cover the entire div and hide the other photo
+    const imgLeft = document.querySelector(".img-left");
+    const imgRight = document.querySelector(".img-right");
+
+    if (imgLeft) imgLeft.style.display = "none";
+    if (imgRight) imgRight.classList.add("celebrating");
   });
 };
