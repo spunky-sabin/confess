@@ -3,15 +3,19 @@ onload = () => {
 
   const sceneContainer = document.getElementById("scene-container");
   const btnOpenMail = document.getElementById("btn-open-mail");
+  const envelopeWrapper = document.getElementById("envelope-wrapper");
   const btnNo = document.getElementById("btn-no");
   const btnYes = document.getElementById("btn-yes");
   const proposalText = document.getElementById("proposal-text");
   const proposalButtons = document.getElementById("proposal-buttons");
 
-  // Open the envelope when the button is clicked
-  btnOpenMail.addEventListener("click", () => {
+  // Open the envelope when the button or envelope is clicked
+  const openMail = () => {
     sceneContainer.classList.add("open");
-  });
+  };
+
+  btnOpenMail.addEventListener("click", openMail);
+  envelopeWrapper.addEventListener("click", openMail);
 
   const noneTexts = [
     "Are you sure?",
