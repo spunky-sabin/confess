@@ -1738,6 +1738,25 @@ body {
 /*# sourceMappingURL=main.css.map */
 
 /* Ghibli Mail Proposal Styles */
+:root {
+  --m-scale: 1;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --m-scale: 0.65;
+  }
+
+  .mail-message {
+    font-size: 1.8rem !important;
+  }
+
+  .btn-open-mail {
+    font-size: 1.2rem !important;
+    padding: 10px 25px !important;
+  }
+}
+
 .scene-container {
   position: fixed;
   top: 0;
@@ -1778,12 +1797,14 @@ body {
   width: 400px;
   height: 250px;
   margin-bottom: 40px;
+  transform: scale(var(--m-scale));
   animation: shake 3s infinite cubic-bezier(.36, .07, .19, .97) both;
   cursor: pointer;
 }
 
 .scene-container.open .envelope-wrapper {
   animation: none;
+  transform: scale(var(--m-scale));
   cursor: default;
 }
 
@@ -1791,7 +1812,7 @@ body {
 
   0%,
   100% {
-    transform: translateY(0) rotate(0);
+    transform: scale(var(--m-scale)) translateY(0) rotate(0);
   }
 
   10%,
@@ -1799,14 +1820,14 @@ body {
   50%,
   70%,
   90% {
-    transform: translateY(-3px) rotate(-2deg);
+    transform: scale(var(--m-scale)) translateY(-3px) rotate(-2deg);
   }
 
   20%,
   40%,
   60%,
   80% {
-    transform: translateY(3px) rotate(2deg);
+    transform: scale(var(--m-scale)) translateY(3px) rotate(2deg);
   }
 }
 
@@ -1906,20 +1927,42 @@ body {
   background-color: #fff9f0;
   border-radius: 5px;
   z-index: 2;
-  transition: transform 1s ease-in-out 0.8s, height 1s ease-in-out 0.8s;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .scene-container.open .letter {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(1.5);
-  height: 400px;
-  /* Expand letter to fit content without clipping */
+  animation: letter-open-anim 2s ease-in-out 0.8s forwards;
   z-index: 6;
   /* Bring letter to front so buttons work */
+}
+
+@keyframes letter-open-anim {
+  0% {
+    transform: translateY(0) scale(1);
+    height: 230px;
+    z-index: 2;
+  }
+
+  35% {
+    transform: translateY(-280px) scale(1);
+    height: 230px;
+    z-index: 2;
+  }
+
+  36% {
+    transform: translateY(-280px) scale(1.1);
+    height: 250px;
+    z-index: 6;
+    /* Pops in front now that it's above the pocket */
+  }
+
+  100% {
+    /* brings it down to the center and scales up */
+    transform: translateY(-30px) scale(calc(1.5 * var(--m-scale)));
+    height: 400px;
+    z-index: 6;
+  }
 }
 
 /* Letter Content */
