@@ -1,16 +1,17 @@
 onload = () => {
   document.body.classList.remove("container");
 
-  // Show the proposal UI after the flowers finish blooming (roughly 4-5 seconds)
-  setTimeout(() => {
-    document.getElementById("proposal-container").classList.add("show");
-  }, 5000); // Adjust this delay based on flower animation time if needed
-
+  const sceneContainer = document.getElementById("scene-container");
+  const btnOpenMail = document.getElementById("btn-open-mail");
   const btnNo = document.getElementById("btn-no");
   const btnYes = document.getElementById("btn-yes");
   const proposalText = document.getElementById("proposal-text");
-  const proposalImg = document.querySelector(".proposal-img");
   const proposalButtons = document.getElementById("proposal-buttons");
+
+  // Open the envelope when the button is clicked
+  btnOpenMail.addEventListener("click", () => {
+    sceneContainer.classList.add("open");
+  });
 
   const noneTexts = [
     "Are you sure?",
@@ -54,7 +55,7 @@ onload = () => {
 
     // Change text of No button
     btnNo.textContent = noneTexts[clickCount % noneTexts.length];
-    
+
     // Make Yes button bigger
     yesScale += 0.2;
     btnYes.style.transform = `scale(${yesScale})`;
