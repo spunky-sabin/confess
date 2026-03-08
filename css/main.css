@@ -1912,7 +1912,10 @@ body {
 }
 
 .scene-container.open .letter {
-  transform: translateY(-250px) scale(1.5);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
   height: 400px;
   /* Expand letter to fit content without clipping */
   z-index: 6;
